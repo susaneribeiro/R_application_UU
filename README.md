@@ -1,11 +1,11 @@
 **ANOVA and regression** 
 Data from kaggle: ([Exam Score Prediction Dataset](https://www.kaggle.com/datasets/kundanbedmutha/exam-score-prediction-dataset?resource=download))
 ### [ANOVA Exam Scores](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/Anova_exam_score.html ) 
-### [Simple Regression with dummy variables](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/regression_dummy_variables.Rmd) 
+### [Simple Regression with dummy variables](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/regression_dummy_variables.html) 
 ### [Multiple regression with ratio variables](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/regression_ratio_variables.html) 
 
 **Data Visualization** 
-### [Visualization with ggplot2 Exam Scores](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/Visualization_ggplot2.Rmd) 
+### [Visualization with ggplot2 Exam Scores](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/Visualization_ggplot2.html) 
 ### [Creating Interaction Plots ](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/interaction_plot.html ) 
 
 
