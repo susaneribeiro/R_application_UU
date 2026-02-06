@@ -1,0 +1,85 @@
+#Linear regression 
+library(dplyr)
+library(ggplot2)
+library(car)        # VIF
+library(lmtest)     # bptest, dwtest
+library(performance) # check_model
+library(sjPlot)     # tab_model
+library(broom)      # tidy output
+library(statmod)
+
+dataset <- read_csv("Exam_Score_Prediction.csv")
+dataset |>
+  select(where(is.numeric)) |>
+  names()
+summary(dataset$class_attendance)
+
+## Regression model to predict Exam Score based on 3 variables:
+### Sleep hours
+### Study hours 
+### class attendance 
+
+fit <- lm(exam_score ~ sleep_hours + class_attendance + study_hours, data = dataset)
+
+summary(fit)
+tab_model(fit, show.ci = TRUE, show.se = TRUE, show.stat = TRUE)
+
+
+#Let's see the effect of each variable on exam score 
+library(effects)
+plot(allEffects(fit))
+
+library(ggplot2)
+
+dataset$predicted <- fitted(fit)
+
+ggplot(dataset, aes(predicted, exam_score)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  labs(x = "Predicted Exam Score", y = "Observed Exam Score")
+
+##Assumptions
+
+res <- residuals(fit)
+# Normality of residuals
+qqnorm(res)
+qqline(res)
+# Multicollinearity
+vif(fit)
+
+# Influential points
+plot(fit, which = 4)  # Cook's distance
+
+# Linearity + homoscedasticity (visual)
+
+
+plot(fitted(fit), res,
+     xlab = "Fitted values fit",
+     ylab = "Residuals",
+     main = "Residuals vs Fitted")
+abline(0, 0)
+### Residuals vs fitted looks like there are some boundaries 
+### chatgpt recommended dividing by 100 and using beta regression
+### Supposedly the heterocedasticity won't be a problem
+### I can't evaluate, but 
+### I'll follow the advice 
+dataset$exam_prop <- dataset$exam_score / 100
+
+
+library(betareg)
+
+beta_fit <- betareg(exam_prop ~ sleep_hours + class_attendance + study_hours, 
+                    data = dataset)
+
+summary(beta_fit)
+
+# Linearity + homoscedasticity (visual)
+
+
+plot(fitted(beta_fit), res,
+     xlab = "Fitted values",
+     ylab = "Residuals",
+     main = "Residuals vs Fitted beta_fit")
+abline(0, 0)
+
+ 

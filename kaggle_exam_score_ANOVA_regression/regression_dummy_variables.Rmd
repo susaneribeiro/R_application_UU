@@ -1,0 +1,62 @@
+---
+title: "regression_rate_dummies"
+output: html_document
+date: "2026-02-06"
+---
+
+Regression Analysis with  categorical factor: 
+Exam score predicted on the basis of Study Method 
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(car)        # VIF
+library(lmtest)     # bptest, dwtest
+library(performance) # check_model
+library(sjPlot)     # tab_model
+library(broom)      # tidy output
+ 
+
+dataset <- read_csv("Exam_Score_Prediction.csv")
+dataset$study_method <- factor(dataset$study_method)
+levels(dataset$study_method) 
+
+table(dataset$study_method) # to understand the dataset 
+dataset %>% count(study_method) # alternative way with pipe 
+
+# setting intercept to "self-study"
+dataset$study_method <- relevel(dataset$study_method, ref = "self-study")
+
+fit <- lm(exam_score ~ study_method, data = dataset)
+
+summary(fit)
+tab_model(fit, show.ci = TRUE, show.se = TRUE, show.stat = TRUE)
+
+
+
+##Assumptions
+# Linearity + homoscedasticity (visual)
+res <- residuals(fit)
+
+plot(fitted(fit), res,
+     xlab = "Fitted values",
+     ylab = "Residuals",
+     main = "Residuals vs Fitted")
+abline(0, 0)
+# line sizes look similar = homoscedasticity 
+
+#Homoscedasticity (formal)
+bptest(fit)
+# p = 0.41 > 0.05 -> homoscedasticity 
+
+# Normality of residuals
+qqnorm(res)
+qqline(res)
+
+
+# Influential points
+plot(fit, which = 4)  # Cook's distance
+
+
+```
