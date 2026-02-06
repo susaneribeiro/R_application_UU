@@ -1,0 +1,97 @@
+---
+title: "EFA_1st_version"
+output: html_document
+date: "2026-02-06"
+---
+
+
+```{r}
+library(lavaan)
+library(ggplot2)
+library(dplyr)
+library(haven)
+library(lavaan)
+library(semTools)
+library(psych)
+library(kableExtra) 
+EFA <- read.table("Schoolplezier.dat", header = TRUE, sep = "\t")
+head(EFA)
+```
+
+## EFA - 1 factor 
+
+Now we will perform the EFA with 1 factor: 
+
+```{r}
+
+efa1 <- fa(EFA[, 5:12], nfactors = 1, fm = "ml")
+efa1 
+efa1$CFI
+efa1$STATISTIC
+efa1$dof
+efa1$PVAL
+efa1$TLI
+efa1$Vaccounted
+efa1$communality
+
+```
+
+## EFA - 2 or more factors
+
+Since TLI < .90 and CFI < .95, we will try again with more factors and parallel analysis. 
+
+
+```{r}
+
+fa.parallel(EFA[,5:12], fm = "ml", fa = "fa")
+# Parallel analysis suggests that the number of factors = 1
+
+efa2 <- fa(EFA[,5:12], nfactors = 2, rotate = "oblimin", fm = "ml")
+efa2
+efa2$CFI
+efa2$STATISTIC
+efa2$dof
+efa2$PVAL
+efa2$TLI
+efa2$Vaccounted
+efa2$communality
+
+efa3 <- fa(EFA[,5:12], nfactors = 3, rotate = "oblimin", fm = "ml")
+efa3
+efa3$CFI
+efa3$STATISTIC
+efa3$dof
+efa3$PVAL
+efa3$TLI
+efa3$Vaccounted
+efa3$communality
+
+models_efa <- list(efa1, efa2, efa3)
+#compare_efa_fit(models_efa)
+
+efa2Orth <- fa(EFA[,5:12], nfactors = 2, rotate = "varimax", fm = "ml")
+efa2Orth 
+```
+
+
+```{r}
+
+# Assumpties checken
+dat <- HolzingerSwineford1939
+HS.model <- ' visual =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed =~ x7 + x8 + x9 '
+fitHS <- cfa(HS.model, data=dat, missing = "ML")
+
+summary(fitHS)
+sum(is.na(dat))
+head(dat)
+
+boxplot(dat$x1)
+
+ggplot(dat, aes(y = x1)) +
+  geom_boxplot(fill = "lightgray") +
+  theme_minimal()
+
+```
+
