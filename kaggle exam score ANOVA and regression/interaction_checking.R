@@ -1,0 +1,65 @@
+library(readr)
+library(readr)
+library(dplyr)
+
+dataset <- read_csv("Exam_Score_Prediction.csv")
+
+
+
+#visually checking for interaction of study method and other variables (sleep quality, exam difficulty and facility rating)
+
+interaction.plot(
+  x.factor = dataset$study_method,
+  trace.factor = dataset$sleep_quality,
+  response = dataset$exam_score,
+  fun = mean,
+  type = "b",
+  pch = 18,
+  col = c("black", "grey30", "grey60"),
+  xlab = "Study method", 
+  ylab = "Mean exam score",
+  trace.label = "Sleep quality"
+)
+
+interaction.plot(
+  x.factor = dataset$study_method,
+  trace.factor = dataset$exam_difficulty,
+  response = dataset$exam_score,
+  fun = mean,
+  type = "b",
+  pch = 18,
+  col = c("black","grey30", "grey60"),
+  xlab = "Study method",
+  ylab = "Mean exam score",
+  trace.label = "Exam difficulty"
+)
+
+
+interaction.plot(
+  x.factor = dataset$exam_difficulty,
+  trace.factor = dataset$study_method,
+  response = dataset$exam_score,
+  fun = mean, 
+  type = "b",
+  pch = 18, 
+  col = c("black", "grey30", "grey60"),
+  xlab = "Exam difficulty",
+  trace.label = "Study method", 
+  ylab = "Exam score"
+)
+
+interaction.plot(
+  x.factor = dataset$facility_rating,
+  trace.factor = dataset$study_method,
+  response = dataset$exam_score,
+  fun = mean, 
+  type = "b",
+  pch = 18,
+  col = c("black", "blue", "grey30", "pink", "brown"),
+  xlab = "Facility rating", 
+  trace.label = "Study method", 
+  ylab = "Exam score"
+)
+
+
+

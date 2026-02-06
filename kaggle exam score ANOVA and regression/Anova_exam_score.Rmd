@@ -1,0 +1,87 @@
+---
+title: "Anova_exam_score"
+output: html_document
+date: "2026-02-06"
+---
+
+```{r} 
+
+
+library(readr)
+library(dplyr)
+library(effectsize)
+library(car) 
+library(ggplot2)
+
+dataset <- read_csv("Exam_Score_Prediction.csv")
+dim(dataset)
+dataset$study_method <- factor(dataset$study_method)
+
+#let's see if the averages are statistically different with the Anova 
+#H0: all the means are the same 
+#H1: at least one mean is different 
+
+anova_study_method <- aov(exam_score ~ study_method, data = dataset)
+
+
+##But first the assumptions 
+###Normality of residuals 
+
+res <- residuals(anova_study_method)
+qqnorm(res)
+qqline(res)
+
+
+leveneTest(exam_score ~ study_method, data = dataset)
+#### p-value > .05 -> Homoscedasticity checked 
+
+###No influential outlier 
+boxplot(exam_score ~ study_method, data = dataset) 
+
+###comparing different ways of showing the results: 
+summary(anova_study_method)
+anova(anova_study_method)
+library(sjPlot)
+tab_model(
+  anova_study_method,
+  show.ci = TRUE,
+  show.se = TRUE,
+  show.stat = TRUE,
+  show.p = TRUE,
+  dv.labels = "Exam score by study method"
+)
+
+library(emmeans)
+
+emm <- emmeans(anova_study_method, ~ study_method)
+emm
+pairs(emm, adjust = "bonferroni")
+library(broom)
+
+### very important chart to plot!!!!!!!! Super significant p-values! 
+tidy(pairs(emm, adjust = "bonferroni"))
+
+## using p = .01, we can say that the difference between group study and online videos is not significant 
+
+# tapply(X, INDEX ( =factor), FUN)
+# “aplique uma função a subconjuntos de um vetor, definidos por um fator” 
+
+tapply(dataset$exam_score, dataset$study_method, mean)
+tapply(dataset$exam_score, dataset$study_method, sd)
+tapply(dataset$exam_score, dataset$study_method, length)
+
+tapply(
+  dataset$exam_score,
+  list(dataset$study_method, dataset$sleep_quality),
+  mean
+)
+
+
+
+## more elegant option: 
+aggregate(exam_score ~ study_method, dataset, mean)
+
+eta_squared(anova_study_method)
+
+
+```
