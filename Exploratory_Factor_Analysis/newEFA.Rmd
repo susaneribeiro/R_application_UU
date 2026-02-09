@@ -1,3 +1,10 @@
+---
+title: "EFA with documentation"
+output: html_document
+date: "2026-02-09"
+---
+
+```{r}
 library(lavaan)
 library(ggplot2)
 library(dplyr)
@@ -226,3 +233,5 @@ compare_efa_fit <- function(models) {
 models_efa <- list(efa1, efa2, efa3)
 compare_efa_fit(models_efa)
 
+
+```
