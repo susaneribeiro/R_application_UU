@@ -1,4 +1,3 @@
-install.packages("kableExtra")
 library(lavaan)
 library(ggplot2)
 library(dplyr)
@@ -8,50 +7,222 @@ library(semTools)
 library(psych)
 library(kableExtra) 
 
-
 EFA <- read.table("Schoolplezier.dat", header = TRUE, sep = "\t")
 head(EFA)
 
-efa1 <- fa(EFA[, 5:12], nfactors = 1, fm = "ml")
-efa1 
-efa1$CFI
-#Chi squared: function STATISTIC ou "empirical Chi squared"
-efa1$STATISTIC
-efa1$dof
-efa1$PVAL
-efa1$TLI
+##########################################################################
+## Recode items 1 to 6 = columns 5 to 10 
+# Algorithm: it2 <- (4 + 1) - D$item2
 
-#model1_efa <- list(efa1)
-#compare_efa_fit(modellen_efa)
+item_recode <- (4 + 1) - EFA[,5:10] 
+colnames(item_recode) <- colnames(D[, 5:10])
 
-fa.parallel(EFA[,5:12], fm = "ml", fa = "fa")
+EFAr <- cbind(EFA[, 1:4], item_rec, D[,11:12])
+
+##########################################################################
+# -------------------------Assumptions ----------------------------------#
+bartlett.test(EFAr) ### Bartletts test of sphericity (ideal signif. p < .01) 
+KMO(EFAr) ### Kaiser-Meyer-Olkin measure (ideal > .70) 
+
+##########################################################################
+# --------------------- Correlation: Does EFA make sense? ---------------#
+corr.test(EFAr[, 5:12], use = "pairwise")
+
+##########################################################################
+# ---  Using Kaisers rule, Eigenvalues > 1 represent valid factors ------#
+## set factors to n items, in this case, we have 8 items no nfactors = 8
+## oblimin is rekected as default 
+## orthogonal: "none", "varimax", "quartimax", "varimin"
+## oblique rotations: "Promax", "oblimin", "bentlerQ"... 
+fa(EFAr, nfactors = 8, rotate = "oblimin")
+
+## Look for SS loadings > 2 -> so only one MR2 : 2 factors  
+## Loof for proportion variance 
+fa(EFAr, nfactors = 2, rotate = "oblimin")
+
+efa2 <- fa(EFAr[, 5:12], nfactors = 2, rotate = "oblimin")
+fa.diagram(efa2, main = "EFA: 2 factors")
+
+##########################################################################
+# --- Parallel analysis to derive the number of factors -----------------#
+## cfa = FALSE will give a principal components parallel analysis 
+library(paran)
+EFAnew <- EFAr[, 5:12]
+EFAcomplete <- EFAnew[complete.cases(EFAnew), ] # completing NA 
+paran(EFAcomplete,
+      cfa = TRUE,
+      graph = TRUE,
+      color = TRUE,
+      col = c("black", "red", "blue"))
+
+# BLUE: random Ev- random set of eigenvalues generated from matrix 
+# BLACK: set of eigenvalues generated from our dataset 
+# we keep Nfactors where eigenvalues > random generated
+# in this case 1 
+
+# Despite the parallel analysis output reporting three retained factors 
+# based on adjusted eigenvalues > 0, 
+# only one factor is substantively meaningful.
+# is does not seem to be a good tool
+
+
+
+##########################################################################
+# --- Parallel analysis for factor retention (EFA) ---
+# Performs Horn’s parallel analysis to determine the number of factors to retain.
+# Observed eigenvalues from the correlation matrix are compared with eigenvalues
+# obtained from randomly generated data of the same size.
+# Factors are retained when the observed eigenvalues exceed the simulated ones.
+# 
+# fa = "fa" specifies factor analysis (not PCA).
+# fm = "ml" ensures consistency with the maximum likelihood extraction method
+# used in the subsequent exploratory factor analysis.
+# 
+# The scree plot displays observed vs. simulated eigenvalues and provides
+# an empirical basis for deciding the number of substantive factors to retain.
+
+fa.parallel(EFAr[,5:12], fm = "ml", fa = "fa")
 # Parallel analysis suggests that the number of factors = 1
 
-efa2 <- fa(EFA[,5:12], nfactors = 2, rotate = "oblimin", fm = "ml")
+##########################################################################
+# --- Determne the number of factors using fit statistic differences ----#
+#--- (Finch, 2020) 
+# 
+# Following Finch (2020), the number of factors is determined by fitting a sequence
+# of exploratory factor analysis (EFA) models with an increasing number of factors
+# (e.g., 1-factor, 2-factor, 3-factor solutions) and comparing their model fit.
+#
+# The procedure is:
+# 1. Estimate an initial 1-factor EFA model and record global fit statistics.
+# 2. Estimate a 2-factor model and compare its fit with the 1-factor model.
+# 3. Continue estimating models with k+1 factors and compare each model with
+#    the previous (k-factor) solution.
+#
+# Model comparison is based on differences in fit indices between adjacent models
+# (e.g., 1 vs. 2 factors, 2 vs. 3 factors), rather than absolute cutoffs.
+#
+# According to Finch (2020), improvements in fit are considered meaningful when:
+# - ΔRMSEA ≥ .015  (particularly effective for categorical indicators and small loadings)
+# - ΔCFI or ΔTLI ≥ .01 (less reliable in many conditions, often prone to overfactoring)
+#
+# The optimal number of factors is the most parsimonious solution for which:
+# - Adding an extra factor produces a meaningful improvement in model fit, AND
+# - Adding one more factor beyond that does not yield a substantial improvement.
+#
+# This approach balances statistical fit with parsimony and avoids relying on a single
+# factor-retention rule (e.g., eigenvalues or parallel analysis alone).
+
+efa1 <- fa(EFAr[, 5:12], nfactors = 1, fm = "ml")
+efa1 
+### ML1 - factorial loadingm .35 fraco, .70 forte 
+### h2: Communality: variancia explicada do item hˆ2 = (loading)ˆ2 
+### u2: uniqueness: non explained variance u2 = 1 - h2 
+### u2 + h2 = 1 
+
+# --- Model fit indices (EFA - ML) ---
+# Chi-square (STATISTIC): ideally non-significant (p > .05),
+#   but highly sensitive to sample size; in EFA it is often significant.
+# Degrees of freedom (dof): used to evaluate chi-square and RMSEA.
+# P-value (PVAL): p > .05 indicates good fit; p < .05 is common with moderate/large N.
+# Tucker-Lewis Index (TLI): > .90 = acceptable fit; > .95 = good fit.
+# Comparative Fit Index (CFI): > .90 = acceptable fit; > .95 = good fit.
+# Practical rule in EFA: do not rely on chi-square alone; interpret together with TLI/CFI/RMSEA.
+
+efa1$CFI        # Comparative Fit Index
+efa1$STATISTIC  # Model chi-square (empirical / likelihood χ²)
+efa1$dof        # Degrees of freedom
+efa1$PVAL       # p-value associated with chi-square
+efa1$TLI        # Tucker-Lewis Index
+efa1$RMSEA[1]   # good < .05 , bad > .10 
+efa1$RMSEA[]
+
+# Compare 1-factor vs 2-factor solution using changes in RMSEA, CFI, and TLI
+# If the improvement exceeds recommended thresholds (e.g., ΔRMSEA ≥ .015),
+# the more complex model is preferred.
+
+efa2 <- fa(EFAr[,5:12], nfactors = 2, rotate = "oblimin", fm = "ml")
 efa2
-efa3 <- fa(EFA[,5:12], nfactors = 3, rotate = "oblimin", fm = "ml")
+efa2$CFI        # Comparative Fit Index
+efa2$STATISTIC  # Model chi-square (empirical / likelihood χ²)
+efa2$PVAL       # p-value associated with chi-square
+efa2$TLI        # Tucker-Lewis Index
+efa2$RMSEA[1]
+
+# Compare 1-factor vs 2-factor solution using changes in RMSEA, CFI, and TLI
+# If the improvement exceeds recommended thresholds (e.g., ΔRMSEA ≥ .015),
+# the more complex model is preferred.
+
+dCFI  <- efa2$CFI  - efa1$CFI
+dTLI  <- efa2$TLI  - efa1$TLI
+dRMSEA <- efa2$RMSEA[1] - efa1$RMSEA[1]
+
+dCFI; dTLI; dRMSEA
+
+#For dRMSEA, we do by hand: 
+efa3 <- fa(EFAr[,5:12], nfactors = 3, rotate = "oblimin", fm = "ml")
+efa3$RMSEA[1]
+dRMSEA32 <- efa3$RMSEA[1] - efa2$RMSEA[1]
+efa2$RMSEA[1]
+efa3$RMSEA[1]
+dRMSEA32
+## RMSEA is better with 3 factors 
+
+
+
+##########################################################################
+# --- Determne the number of factors using fit statistic differences ----#
+# Fit a sequence of EFA models (1..K factors) and compare adjacent solutions using CFI/TLI
+K <- 6  # set max number of factors you want to try
+
+models <- vector("list", K)
+for (k in 1:K) {
+  models[[k]] <- fa(EFAr[, 5:12], nfactors = k, fm = "ml", rotate = "oblimin")
+}
+
+fit_diff <- data.frame(from = integer(), to = integer(), dCFI = numeric(), dTLI = numeric())
+
+for (k in 2:K) {
+  dCFI <- models[[k]]$CFI - models[[k - 1]]$CFI
+  dTLI <- models[[k]]$TLI - models[[k - 1]]$TLI
+  
+  fit_diff <- rbind(fit_diff, data.frame(from = k - 1, to = k, dCFI = dCFI, dTLI = dTLI))
+}
+
+fit_diff
+
+
+
+##########################################################################
+# --- From Grasple lesson: compare function -----------------------------#
+compare_efa_fit <- function(models) {
+  # check of het model een 'list' is
+  if (!is.list(models)) stop("Provide a list of EFA models.")
+  
+  # bereken SRMR
+  calculate_srmr <- function(model) {
+    residuals <- model$residual
+    sqrt(mean(residuals[lower.tri(residuals)]^2))
+  }
+  
+  # haal de fitmeasures uit elk model
+  fit_metrics <- data.frame(
+    RMSEA = sapply(models, function(model) model$RMSEA[1]),
+    TLI = sapply(models, function(model) model$TLI),
+    SRMR = sapply(models, calculate_srmr),  
+    CFI = sapply(models, function(model) model$CFI),  
+    ChiSquare = sapply(models, function(model) model$STATISTIC),
+    df = sapply(models, function(model) model$dof),
+    pValue = sapply(models, function(model) model$PVAL)
+  )
+  
+  # maak een tabel
+  fit_metrics <- fit_metrics %>%
+    kbl(caption = "Comparison of EFA Fit Indices") %>%
+    kable_classic(full_width = FALSE, latex_options = "striped")
+  
+  return(fit_metrics)
+}
 
 models_efa <- list(efa1, efa2, efa3)
-#compare_efa_fit(models_efa)
-
-efa2Orth <- fa(EFA[,5:12], nfactors = 2, rotate = "varimax", fm = "ml")
-efa2Orth 
-
-# Assumpties checken
-dat <- HolzingerSwineford1939
-HS.model <- ' visual =~ x1 + x2 + x3
-textual =~ x4 + x5 + x6
-speed =~ x7 + x8 + x9 '
-fitHS <- cfa(HS.model, data=dat, missing = "ML")
-
-summary(fitHS)
-sum(is.na(dat))
-head(dat)
-
-boxplot(dat$x1)
-
-ggplot(dat, aes(y = x1)) +
-  geom_boxplot(fill = "lightgray") +
-  theme_minimal()
-
+compare_efa_fit(models_efa)
 
