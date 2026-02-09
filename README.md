@@ -1,3 +1,5 @@
+In February, working on Exploratory Factor Analysis and Confirmatory Factor Analysis. 
+
 **ANOVA and regression** 
 Data from kaggle: ([Exam Score Prediction Dataset](https://www.kaggle.com/datasets/kundanbedmutha/exam-score-prediction-dataset?resource=download))
 ### [ANOVA Exam Scores](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/Anova_exam_score.html ) 
