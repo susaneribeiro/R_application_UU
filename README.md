@@ -1,5 +1,5 @@
 In February, working on Exploratory Factor Analysis and Confirmatory Factor Analysis: 
-### [Exploratory Factor Analysis Markdown](https://susaneribeiro.github.io/R_application_UU/Exploratory_Factor_Analysis/newEFA.Rmd)
+### [Exploratory Factor Analysis Markdown](https://susaneribeiro.github.io/R_application_UU/Exploratory_Factor_Analysis/EFA_with_documentation.html)
 
 **Factor Analysis (block 3 course at UU)**
 ### [Factor Analysis Markdown](https://susaneribeiro.github.io/R_application_UU/Factor_Analysis/SchoolPlezier_Factor_Analysis.html )
