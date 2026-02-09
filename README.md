@@ -1,5 +1,6 @@
-In February, working on Exploratory Factor Analysis and Confirmatory Factor Analysis. 
+In February, working on Exploratory Factor Analysis and Confirmatory Factor Analysis: https://github.com/susaneribeiro/R_application_UU/blob/main/Exploratory_Factor_Analysis/EFA_1.R 
 
+Markdown files below: 
 **ANOVA and regression** 
 Data from kaggle: ([Exam Score Prediction Dataset](https://www.kaggle.com/datasets/kundanbedmutha/exam-score-prediction-dataset?resource=download))
 ### [ANOVA Exam Scores](https://susaneribeiro.github.io/R_application_UU/kaggle_exam_score_ANOVA_regression/Anova_exam_score.html ) 
